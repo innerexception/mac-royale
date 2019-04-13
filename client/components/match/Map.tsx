@@ -301,13 +301,6 @@ const getTilesInRange = (player:Player, map:Array<Array<Tile>>) => {
     return tiles
 }
 
-const isSelectedTile = (tile:Tile, selectedTile?:Tile) => {
-    if(selectedTile){
-        return tile.x === selectedTile.x && tile.y === selectedTile.y
-    }
-    return false
-}
-
 const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))

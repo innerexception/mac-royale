@@ -44,13 +44,7 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
 }
 
 export const onMovePlayer = (player:Player, session:Session) => {
-    session.map.forEach(row => row.forEach(tile => {
-        if(tile.playerId && tile.playerId === player.id) delete tile.playerId
-    }))
-    session.map[player.x][player.y].playerId = player.id
-    session.players = session.players.filter(splayer=>splayer.id !== player.id)
-    session.players.push(player)
-    sendSessionUpdate(session)
+    sendReplacePlayer(session, player)
 }
 
 export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
@@ -114,6 +108,14 @@ const sendSessionUpdate = (session:Session) => {
         session: {
             ...session
         }
+    })
+}
+
+const sendReplacePlayer = (session:Session, player:Player) => {
+    server.publishMessage({
+        type: ReducerActions.PLAYER_REPLACE,
+        sessionId: session.sessionId,
+        player
     })
 }
 

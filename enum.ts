@@ -17,7 +17,8 @@ export const ReducerActions= {
     INIT_SERVER: 'is',
     CONNECTION_ERROR: 'ce',
     CONNECTED: 'c',
-    SET_USER: 'su'
+    SET_USER: 'su',
+    PLAYER_REPLACE: 'prp'
 }
 declare enum Item {
     SMAL_HEALTH='SMAL_HEALTH',

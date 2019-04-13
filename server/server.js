@@ -2,7 +2,8 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 var Constants = {
   PLAYER_AVAILABLE: 'ma',
-  MATCH_UPDATE: 'mu'
+  MATCH_UPDATE: 'mu',
+  PLAYER_REPLACE: 'prp'
 }
 
 /**
@@ -68,6 +69,15 @@ wsServer.on('request', function(request) {
             break
           case Constants.MATCH_UPDATE:
             targetSession = {...targetSession, ...obj.session}
+            break
+          case Constants.PLAYER_REPLACE: 
+            var player = obj.player
+            targetSession.map.forEach(row => row.forEach(tile => {
+                if(tile.playerId && tile.playerId === player.id) delete tile.playerId
+            }))
+            targetSession.map[player.x][player.y].playerId = player.id
+            targetSession.players = targetSession.players.filter(splayer=>splayer.id !== player.id)
+            targetSession.players.push(player)
             break
         }
         sessions[obj.sessionId] = targetSession
