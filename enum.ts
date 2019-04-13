@@ -20,7 +20,10 @@ export const ReducerActions= {
     SET_USER: 'su',
     PLAYER_REPLACE: 'prp'
 }
-declare enum Item {
+
+export const PlayerRune = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+
+export enum Item {
     SMAL_HEALTH='SMAL_HEALTH',
     LARGE_HEALTH='LARGE_HEALTH'
 }
@@ -46,10 +49,10 @@ export const Weapon = {
         ammo: 6,
         maxAmmo: 6,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'A'
     },
-    C1911: {
-        name: '1911',
+    G30: {
+        name: 'G30',
         atk: 2,
         range: 3,
         attacks: 1,
@@ -57,7 +60,7 @@ export const Weapon = {
         ammo: 7,
         maxAmmo: 7,
         accuracy: 0.4,
-        rune: 'a'
+        rune: 'D'
     },
     LUGER: {
         name: 'Luger',
@@ -68,7 +71,18 @@ export const Weapon = {
         ammo: 7,
         maxAmmo: 7,
         accuracy: 0.4,
-        rune: 'a'
+        rune: 'HI'
+    },
+    MAGNUM: {
+        name: '.357',
+        atk: 6,
+        range: 4,
+        attacks: 1,
+        maxAttacks: 1,
+        ammo: 6,
+        maxAmmo: 6,
+        accuracy: 0.4,
+        rune: 'mn'
     },
     SPRINGFIELD: {
         name: 'Springfield',
@@ -79,7 +93,7 @@ export const Weapon = {
         ammo: 1,
         maxAmmo: 1,
         accuracy: 0.8,
-        rune: 'a'
+        rune: 'XYZ'
     },
     MAC10: {
         name: 'MAC10',
@@ -90,7 +104,7 @@ export const Weapon = {
         ammo: 20,
         maxAmmo: 20,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'L'
     },
     MP5: {
         name: 'MP5',
@@ -101,7 +115,7 @@ export const Weapon = {
         ammo: 20,
         maxAmmo: 20,
         accuracy: 0.4,
-        rune: 'a'
+        rune: 'MN'
     },
     UZI: {
         name: 'UZI',
@@ -112,7 +126,7 @@ export const Weapon = {
         ammo: 24,
         maxAmmo: 24,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'pq'
     },
     AK: {
         name: 'AK47',
@@ -123,7 +137,7 @@ export const Weapon = {
         ammo: 30,
         maxAmmo: 30,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'OP'
     },
     THOMPSON: {
         name: 'Thompson',
@@ -134,7 +148,7 @@ export const Weapon = {
         ammo: 20,
         maxAmmo: 20,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'UV'
     },
     MG42: {
         name: 'MG42',
@@ -145,7 +159,7 @@ export const Weapon = {
         ammo: 50,
         maxAmmo: 50,
         accuracy: 0.2,
-        rune: 'a'
+        rune: 'rstuv'
     },
     M4: {
         name: 'M4',
@@ -156,7 +170,7 @@ export const Weapon = {
         ammo: 30,
         maxAmmo: 30,
         accuracy: 0.4,
-        rune: 'a'
+        rune: 'RST'
     },
     BARRET: {
         name: 'Barret',
@@ -167,7 +181,7 @@ export const Weapon = {
         ammo: 5,
         maxAmmo: 5,
         accuracy: 0.8,
-        rune: 'a'
+        rune: 'cde'
     },
     SWEEPER: {
         name: 'Barret',
@@ -178,7 +192,7 @@ export const Weapon = {
         ammo: 5,
         maxAmmo: 5,
         accuracy: 0.8,
-        rune: 'a'
+        rune: 'hij'
     },
     MINI: {
         name: 'Mini',
@@ -189,7 +203,7 @@ export const Weapon = {
         ammo: 100,
         maxAmmo: 100,
         accuracy: 0.3,
-        rune: 'a'
+        rune: 'wxy'
     }
 }
 

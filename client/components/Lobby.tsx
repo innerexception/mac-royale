@@ -1,7 +1,8 @@
-import * as React from 'react';
-import { onMatchStart } from './uiManager/Thunks'
-import AppStyles from '../AppStyles';
-import { TopBar } from './Shared';
+import * as React from 'react'
+import { onMatchStart, onUpdatePlayer } from './uiManager/Thunks'
+import AppStyles from '../AppStyles'
+import { TopBar } from './Shared'
+import { PlayerRune } from '../../enum'
 
 interface Props { 
     activeSession:Session
@@ -17,9 +18,14 @@ export default class Lobby extends React.Component<Props> {
             this.props.activeSession)
     }
 
+    chooseAvatar = (avatar:string) => {
+        let player = this.props.currentUser as Player
+        player.rune = avatar
+        onUpdatePlayer(player, this.props.activeSession)
+    }
+
     getErrors = () => {
         if(this.props.activeSession.players.length < 2) return 'Waiting for more to join...'
-        if(this.props.activeSession.players.length > 10) return 'Too many players in match...'
     }
 
     render(){
@@ -32,6 +38,12 @@ export default class Lobby extends React.Component<Props> {
                         {this.props.activeSession.players.map((player:Player) => 
                             <div style={styles.nameTag}>
                                 {player.name}
+                                <select disabled={player.id!==this.props.currentUser.id} 
+                                        style={{fontFamily:'Rune'}} 
+                                        value={player.rune}
+                                        onChange={(e)=>this.chooseAvatar(e.currentTarget.value)}>
+                                    {PlayerRune.map(rune => <option value={rune} style={{fontFamily:'Rune'}}>{rune}</option>)}
+                                </select>
                             </div>
                         )}
                     </div>

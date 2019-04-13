@@ -22,8 +22,7 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
             maxHp: 5,
             move: 13,
             maxMove: 13,
-            armor: 0,
-            rune: 'a'
+            armor: 0
         }
     })
     const newSession = {
@@ -120,7 +119,11 @@ const sendReplacePlayer = (session:Session, player:Player) => {
 }
 
 const replacePlayer = (session:Session, player:Player) => {
-    session.players = session.players.filter(splayer=>player.id!==splayer.id)
-    session.players.push(player)
+    session.players = session.players.map(splayer=>{
+        if(splayer.id === player.id){
+            return {...splayer, ...player}
+        }
+        return splayer
+    })
     return session
 }
