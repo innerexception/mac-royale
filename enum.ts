@@ -201,7 +201,17 @@ export const FourCoordinates = {
     UP: {x:0,y:-1}
 }
 export const FourCoordinatesArray = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]
-export const EightCoordinatesArray = [{x:1,y:0},{x:1,y:1},{x:-1,y:0},{x:-1,y:-1},{x:0,y:1},{x:-1, y:1},{x:0,y:-1},{x:-1,y:0}]
+export const EightCoordinates = {
+    RIGHT:{x:1,y:0},
+    UPRIGHT: {x:1, y:-1},
+    UP: {x:0,y:-1},
+    UPLEFT: {x:-1, y:-1},
+    LEFT: {x:-1,y:0},
+    DOWNLEFT: {x: -1, y:1},
+    DOWN: {x:0,y:1},
+    DOWNRIGHT: {x:1, y:1}
+}
+export const EightCoordinatesArray = [{x:1,y:0},{x:1,y:-1},{x:0,y:-1},{x:-1,y:-1},{x:-1,y:0},{x:-1, y:1},{x:0,y:1},{x:1,y:1}]
     
 export enum TileType {
     MOUNTAIN='MOUNTAIN',
@@ -222,7 +232,7 @@ export const EmptyTile = {
     y: 0,
     type: TileType.GRASS,
     subType: null as null,
-    player: null as null,
+    playerId: null as null,
     item: null as null,
     weapon: null as null,
     weaponSpawn: false,

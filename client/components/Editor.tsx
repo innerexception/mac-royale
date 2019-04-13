@@ -20,7 +20,7 @@ export default class Editor extends React.Component {
     setTileType = (tile:Tile, type:TileType) => {
         let newTile = {
             ...tile,
-            player: null as null,
+            playerId: null as null,
             item: null as null,
             weapon: null as null,
             type,

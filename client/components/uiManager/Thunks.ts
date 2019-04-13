@@ -20,8 +20,8 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
             weapon: Weapon.FIST,
             hp: 5,
             maxHp: 5,
-            move: 3,
-            maxMove: 3,
+            move: 13,
+            maxMove: 13,
             armor: 0,
             rune: 'a'
         }
@@ -31,7 +31,12 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
         players,
-        map: Thunderdome.map((row, i) => row.map((tile:Tile, j) => {return {...tile, x:i, y:j, player: players.find(player=>player.x===i && player.y === j)}})),
+        map: Thunderdome.map((row, i) => 
+                row.map((tile:Tile, j) => {
+                    let player = players.find(player=>player.x===i && player.y === j)
+                    return {...tile, x:i, y:j, playerId: player ? player.id : null}
+                })
+            ),
         ticks: 0,
         turnTickLimit: 20
     }
@@ -40,23 +45,25 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
 
 export const onMovePlayer = (player:Player, session:Session) => {
     session.map.forEach(row => row.forEach(tile => {
-        if(tile.player && tile.player.id === player.id) delete tile.player
+        if(tile.playerId && tile.playerId === player.id) delete tile.playerId
     }))
-    session.map[player.x][player.y].player = player
+    session.map[player.x][player.y].playerId = player.id
+    session.players = session.players.filter(splayer=>splayer.id !== player.id)
+    session.players.push(player)
     sendSessionUpdate(session)
 }
 
 export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
-    const target = tile.player
+    const target = session.players.find(player=>player.id === tile.playerId)
     target.hp -= attacker.weapon.atk
     attacker.move = 0
     attacker.weapon.attacks--     
 
-    session.map[attacker.x][attacker.y].player = {...attacker}
+    session = replacePlayer(session, {...attacker})
+    
     if(target.hp <= 0){
         toast.show({message: 'Casualty.'})
-        delete session.map[target.x][target.y].player
-        session.players = session.players.filter(player=>player.id!==target.id)
+        delete session.map[target.x][target.y].playerId
     }
 
     if(session.players.length === 1)
@@ -77,21 +84,16 @@ export const onMatchTick = (session:Session) => {
 
 const onEndTurn = (session:Session) => {
     session.ticks = 0
-    session.map.forEach(row=>row.forEach(tile=>{
-        if(tile.player) {
-            tile.player.move = tile.player.maxMove
-            tile.player.weapon.attacks = tile.player.weapon.maxAttacks
-            if(tile.player.itemCooldown > 0) tile.player.itemCooldown--
-        }
-    }))
+    session.players.forEach(player=>{
+        player.move = player.maxMove
+        player.weapon.attacks = player.weapon.maxAttacks
+        if(player.itemCooldown > 0) player.itemCooldown--
+    })
     sendSessionUpdate(session)
 }
 
 export const onUpdatePlayer = (player:Player, session:Session) => {
-    session.map.forEach(row=>row.forEach(tile=>{
-        if(tile.player && tile.player.id === player.id) tile.player = {...player}
-    }))
-    sendSessionUpdate(session)
+    sendSessionUpdate(replacePlayer(session, player))
 }
 
 export const onMatchWon = (session:Session) => {
@@ -113,4 +115,10 @@ const sendSessionUpdate = (session:Session) => {
             ...session
         }
     })
+}
+
+const replacePlayer = (session:Session, player:Player) => {
+    session.players = session.players.filter(splayer=>player.id!==splayer.id)
+    session.players.push(player)
+    return session
 }

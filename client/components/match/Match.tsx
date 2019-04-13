@@ -13,7 +13,6 @@ interface State {
     isHost: boolean
     interval: NodeJS.Timeout | number
     showMatchOptions: boolean
-    me: Player
 }
 
 export default class Match extends React.Component<Props, State> {
@@ -21,7 +20,6 @@ export default class Match extends React.Component<Props, State> {
     state = {
         interval: 0,
         isHost: this.props.activeSession.hostPlayerId === this.props.currentUser.id,
-        me: this.props.activeSession.players.find(player=>player.id===this.props.currentUser.id),
         showMatchOptions: false,
     }
 
@@ -35,7 +33,7 @@ export default class Match extends React.Component<Props, State> {
                 {TopBar('MacRoyale')}
                 <div style={{padding:'0.5em', maxWidth:'25em'}}>
                     <Map map={this.props.activeSession.map} 
-                        me={this.state.me}
+                        me={this.props.activeSession.players.find(player=>player.id===this.props.currentUser.id)}
                         isHost={this.state.isHost}
                         activeSession={this.props.activeSession}
                         players={this.props.activeSession.players}/>

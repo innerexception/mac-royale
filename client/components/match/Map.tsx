@@ -13,9 +13,8 @@ interface Props {
 }
 
 interface State {
-    selectedTile: Tile | null
-    movingPlayer: Player | null
-    attackingPlayer: Player | null
+    movingPlayer: boolean
+    attackingPlayer: boolean
     showDescription: Player | null
     highlightTiles: Array<Array<boolean>>
     visibleTiles: Array<Array<boolean>>
@@ -24,15 +23,28 @@ interface State {
 export default class Map extends React.Component<Props, State> {
 
     state = {
-        selectedTile: null as null,
-        movingPlayer: null as null,
-        attackingPlayer: null as null,
+        movingPlayer: false,
+        attackingPlayer: false,
         showDescription: null as null,
         highlightTiles: [[false]],
         visibleTiles: getVisibleTilesOfPlayer(this.props.me, this.props.map),
-        startX: -1,
-        startY: -1
+        playerElRef: React.createRef()
     }
+
+    componentDidMount = () => {
+        window.addEventListener('keydown', (e)=>this.handleKeyDown(e.keyCode))
+        this.startMovePlayer()
+    }
+
+    startMovePlayer = () => {
+        this.setState({movingPlayer: true, attackingPlayer:false, highlightTiles:[[false]]});
+        (this.state.playerElRef.current as any).scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center',
+                                            inline: 'center',
+                                        })
+    }
+                
 
     getNotification = () => {
         let activeName = this.props.activeSession.players[0] && this.props.activeSession.players[0].name
@@ -57,11 +69,12 @@ export default class Map extends React.Component<Props, State> {
     }
 
     getUnitInfoOfTile = () => {
-        let tile = this.state.selectedTile
+        let tile = this.props.map[this.props.me.x][this.props.me.y]
         if(tile){
-            let player = (tile as any).player as Player
-            if(player){
-                let isOwner = player.id === this.props.me.id
+            let playerId = (tile as any).playerId
+            if(playerId){
+                let isOwner = playerId === this.props.me.id
+                let player = this.props.activeSession.players.find(player => player.id === playerId)
                 return <div style={styles.tileInfo}>
                             <div>
                                 <h4>{player.name}</h4>
@@ -85,7 +98,7 @@ export default class Map extends React.Component<Props, State> {
     
 
     moveUnit = (player:Player, direction:Directions) => {
-        let candidateTile = {...this.state.selectedTile as Tile}
+        let candidateTile = {...this.props.map[player.x][player.y]}
         if(player.move > 0){
             switch(direction){
                 case Directions.DOWN: candidateTile.y++
@@ -101,9 +114,15 @@ export default class Map extends React.Component<Props, State> {
                 player.x = candidateTile.x
                 player.y = candidateTile.y
                 player.move--
-                candidateTile.player = player
-                this.setState({selectedTile: candidateTile, visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
-                    ()=>onMovePlayer(player, this.props.activeSession))
+                candidateTile.playerId = player.id
+                this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
+                    ()=>onMovePlayer(player, this.props.activeSession));
+
+                (this.state.playerElRef.current as any).scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'center',
+                    })
             }
         }
     }
@@ -111,7 +130,7 @@ export default class Map extends React.Component<Props, State> {
     getObstruction = (x:number, y:number, player:Player) => {
         let tile = this.props.map[x][y]
         if(tile){
-            if(tile.player) return true
+            if(tile.playerId) return true
             if(tile.type === TileType.MOUNTAIN || tile.type===TileType.RIVER){
                 return true 
             } 
@@ -132,17 +151,17 @@ export default class Map extends React.Component<Props, State> {
 
     showAttackTiles = (player:Player) => {
         let highlightTiles = getTilesInRange(player, this.props.map)
-        this.setState({attackingPlayer: player, highlightTiles})
+        this.setState({attackingPlayer: true, highlightTiles, movingPlayer: false})
     }
 
     hideAttackTiles = () => {
-        this.setState({attackingPlayer: null, highlightTiles:[[false]]})
+        this.setState({attackingPlayer: false, movingPlayer:true, highlightTiles:[[false]]})
     }
 
     performAttackOnTile = (tile:Tile) => {
-        if(tile.player){
+        if(tile.playerId){
             //TODO flash/shake tile's unit here
-            onAttackTile(this.state.attackingPlayer, tile, this.props.activeSession)
+            onAttackTile(this.props.me, tile, this.props.activeSession)
         }
         this.hideAttackTiles()
     }
@@ -152,24 +171,9 @@ export default class Map extends React.Component<Props, State> {
             let isOwner = player.id === me.id
             if(isOwner){
                 let buttons = []
-                if(this.state.attackingPlayer){
-                    buttons.push(LightButton(true, this.hideAttackTiles, 'Cancel'))
-                }
-                if(!this.state.attackingPlayer){
-                    if(this.state.selectedTile && (this.state.selectedTile as any).player && (this.state.selectedTile as any).player.weapon.attacks > 0)
-                        if(!this.state.movingPlayer) 
-                            buttons.push(LightButton(true, ()=>this.showAttackTiles(player), 'Attack'))
-                }
-                if(this.state.movingPlayer){
-                    if(player.move<player.maxMove){
-                        buttons.push(LightButton(true, ()=>this.setState({movingPlayer:null}), 'Done'))
-                    }
-                }
-                if(!this.state.movingPlayer && !this.state.attackingPlayer){
-                    if(player.move>0) buttons.push(LightButton(true, ()=>this.setState({movingPlayer: player, attackingPlayer:null, highlightTiles:[[false]]}), 'Move'))
-                }
+                buttons.push(LightButton(true, ()=>this.showAttackTiles(player), '(A)ttack'))
+                buttons.push(LightButton(true, this.startMovePlayer, '(M)ove'))
                 if(player.item) buttons.push(LightButton(player.itemCooldown === 0, ()=>this.performSpecial(player), player.item))
-
                 return <div>
                             {buttons}
                        </div>
@@ -178,9 +182,9 @@ export default class Map extends React.Component<Props, State> {
         return <span/>
     }
 
-    getMoveArrowsOfTile = (tile:Tile, movingPlayer?:Player) => {
-        let tileUnit = tile.player
-        if(tileUnit && movingPlayer && tileUnit.id === movingPlayer.id)
+    getMoveArrowsOfTile = (tile:Tile, movingPlayer:boolean, session:Session) => {
+        let tileUnit = session.players.find(player=>player.id === tile.playerId)
+        if(tileUnit && movingPlayer && tile.playerId === this.props.me.id)
             return [
                     <div style={styles.leftArrow} onClick={()=>this.moveUnit(tileUnit, Directions.LEFT)}>{'<'}</div>,
                     <div style={styles.rightArrow} onClick={()=>this.moveUnit(tileUnit, Directions.RIGHT)}>></div>,
@@ -193,7 +197,30 @@ export default class Map extends React.Component<Props, State> {
     getTileClickHandler = (tile:Tile) => {
         if(this.state.movingPlayer) return null
         if(this.state.attackingPlayer) return ()=>this.performAttackOnTile(tile)
-        return ()=>this.setState({selectedTile: tile, attackingPlayer:null, highlightTiles:[[false]]})
+        return ()=>this.setState({attackingPlayer:null, highlightTiles:[[false]]})
+    }
+
+    handleKeyDown = (keyCode:number) =>{
+        switch(keyCode){
+            case 77:
+                this.state.movingPlayer ? this.setState({movingPlayer:false}) : this.startMovePlayer()
+                break
+            case 65:
+                this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me)
+                break
+            case 38:
+                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.UP)
+                break
+            case 40: 
+                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.DOWN)
+                break
+            case 37: 
+                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.LEFT)
+                break
+            case 39: 
+                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.RIGHT)
+                break
+        }
     }
 
     render(){
@@ -210,13 +237,12 @@ export default class Map extends React.Component<Props, State> {
                                                 ...styles.tile, 
                                                 opacity: getTileOpacity(tile, this.props.me, this.state.visibleTiles),
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
-                                                borderStyle: isSelectedTile(tile, this.state.selectedTile) ? 'dashed' : 'dotted'
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
                                             {tile.item && <div style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</div>}
-                                            {this.state.movingPlayer && this.getMoveArrowsOfTile(tile, this.state.movingPlayer)}
-                                            {getUnitPortraitOfTile(tile)}
+                                            {this.state.movingPlayer && this.getMoveArrowsOfTile(tile, this.state.movingPlayer, this.props.activeSession)}
+                                            {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}
                                         </div>
                                     )}
                                 </div>
@@ -234,10 +260,10 @@ export default class Map extends React.Component<Props, State> {
     }
 }
 
-const getUnitPortraitOfTile = (tile:Tile) => {
-    let tileUnit = tile.player
+const getUnitPortraitOfTile = (tile:Tile, me:Player, ref:any, session:Session) => {
+    let tileUnit = session.players.find(player=>player.id === tile.playerId)
     if(tileUnit){
-        return <div style={{textAlign:'right', position:'absolute', top:0, right:0}}>
+        return <div style={{textAlign:'right', position:'absolute', top:0, right:0}} ref={tileUnit.id === me.id && ref}>
                     <span style={{fontFamily:'Gun', fontSize:'0.6em'}}>{tileUnit.weapon.rune}</span>
                     <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.rune}</span>
                     <div>{new Array(tileUnit.hp).fill(null).map((hp) =>  <span>*</span>)}</div>
@@ -247,11 +273,11 @@ const getUnitPortraitOfTile = (tile:Tile) => {
 }
 
 const getTileOpacity = (tile:Tile, me:Player, visibleTiles: Array<Array<boolean>>) => {
-    if(tile.player){
-        let isOwner = tile.player.id === me.id
+    if(tile.playerId){
+        let isOwner = tile.playerId === me.id
         if(isOwner) return 1
         else {
-            return visibleTiles[tile.player.x][tile.player.y] ? 0.5 : 0
+            return visibleTiles[tile.x][tile.y] ? 0.5 : 0
         }
     }
     return visibleTiles[tile.x][tile.y] ? 1 : 0.5
@@ -285,19 +311,20 @@ const isSelectedTile = (tile:Tile, selectedTile?:Tile) => {
 const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
-    EightCoordinatesArray.forEach((direction) => {
-        let candidateX = player.x
-        let candidateY = player.y
-        for(var i=Math.max(player.weapon.range, 3); i>0; i--){
-            candidateX += direction.x
-            candidateY += direction.y
+    for(var i=0; i<Math.max(player.weapon.range, 3); i++){
+        //TODO: each sight ring beyond the first is larger
+        //Negative values must become more negative
+        EightCoordinatesArray.forEach((direction) => {
+            let candidateX = player.x
+            let candidateY = player.y
+            candidateX += (direction.x < 0 ? direction.x-i : direction.x+i)
+            candidateY += (direction.y < 0 ? direction.y-i : direction.y+i)
             if(candidateY >= 0 && candidateX >= 0 
                 && candidateX < map.length 
                 && candidateY < map[0].length)
                 tiles[candidateX][candidateY] = true
-                console.log('visible tile at '+candidateX + ','+candidateY)
-        }
-    })
+        })
+    }
     return tiles
 }
 

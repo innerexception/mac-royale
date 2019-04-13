@@ -72,7 +72,7 @@ interface Tile {
     y: number
     type: TileType
     subType: string
-    player: Player | null
+    playerId: string
     weapon: Weapon | null
     item: Item | null
     weaponSpawn: boolean
