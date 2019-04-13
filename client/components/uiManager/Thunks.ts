@@ -34,6 +34,7 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
                 row.map((tile:Tile, j) => {
                     let player = players.find(player=>player.x===i && player.y === j)
                     return {...tile, x:i, y:j, playerId: player ? player.id : null}
+                    //TODO set tile item/weapon if spawner is set
                 })
             ),
         ticks: 0,
@@ -81,6 +82,11 @@ const onEndTurn = (session:Session) => {
         player.move = player.maxMove
         player.weapon.attacks = player.weapon.maxAttacks
         if(player.itemCooldown > 0) player.itemCooldown--
+        if(player.weapon.reloadCooldown > 0){
+            player.weapon.reloadCooldown--
+            if(player.weapon.reloadCooldown === 0)
+                player.weapon.ammo = player.weapon.maxAmmo
+        }
     })
     sendSessionUpdate(session)
 }

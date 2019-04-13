@@ -35,10 +35,12 @@ export const Weapon = {
         range: 1,
         attacks: 1,
         maxAttacks: 1,
-        ammo: -1,
-        maxAmmo: -1,
+        ammo: 1,
+        maxAmmo: 1,
         accuracy: 1,
-        rune: 'a'
+        rune: '',
+        reloadCooldown: 0,
+        reloadCooldownMax: 0
     },
     SP38: {
         name: '.38',

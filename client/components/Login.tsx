@@ -2,7 +2,6 @@ import * as React from 'react';
 import { onLogin } from './uiManager/Thunks'
 import AppStyles from '../AppStyles';
 import { Button, TopBar } from './Shared'
-import App from '../App';
 
 export default class Login extends React.Component {
     state = { name: '', sessionId: ''}
@@ -24,7 +23,7 @@ export default class Login extends React.Component {
 }
 
 const getUser = (name:string) => {
-   return {name,id: Date.now() + ''+ Math.random()}
+   return {name,id: Date.now() + ''+ Math.random(), rune:'a'}
 }
 
 const styles = {

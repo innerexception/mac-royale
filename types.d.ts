@@ -48,7 +48,9 @@ interface Weapon {
     ammo: number
     maxAmmo: number
     accuracy: number
-    rune: string
+    rune: string,
+    reloadCooldown: number,
+    reloadCooldownMax: number
 }
 
 interface Player {
@@ -64,7 +66,7 @@ interface Player {
     itemCooldown: number
     item: Item,
     weapon: Weapon,
-    armor: number
+    armor: number,
 }
 
 interface Tile {

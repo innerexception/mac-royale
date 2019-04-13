@@ -68,32 +68,20 @@ export default class Map extends React.Component<Props, State> {
             )
     }
 
-    getUnitInfoOfTile = () => {
-        let tile = this.props.map[this.props.me.x][this.props.me.y]
-        if(tile){
-            let playerId = (tile as any).playerId
-            if(playerId){
-                let isOwner = playerId === this.props.me.id
-                let player = this.props.activeSession.players.find(player => player.id === playerId)
-                return <div style={styles.tileInfo}>
-                            <div>
-                                <h4>{player.name}</h4>
-                                <h4>{(tile as any).type}</h4>
-                                {LightButton(true, ()=>this.setState({showDescription: player}), 'Info')}
-                            </div>
-                            <div>
-                                {isOwner && <h4>M: {player.move} / {player.maxMove}</h4>}
-                                {isOwner && player.weapon.name !== 'Fist' && <h4>A: {player.weapon.ammo} / {player.weapon.maxAmmo}</h4>}
-                                {this.getUnitActionButtons(this.props.me, player)}
-                            </div>
-                        </div>
-            }
-            else
-                return <div style={styles.tileInfo}>
-                            <h4>{(tile as any).type}</h4>
-                        </div>
-        }
-        return <div style={styles.tileInfo}>No selection...</div>
+    getMyInfo = () => {
+        let player = this.props.me
+        return <div style={styles.tileInfo}>
+                    <div>
+                        <h4>{player.name}</h4>
+                        {LightButton(true, ()=>this.setState({showDescription: player}), 'Info')}
+                    </div>
+                    <div>
+                        <h4>M: {player.move} / {player.maxMove}</h4>
+                        <h4>A: {player.weapon.attacks} / {player.weapon.maxAttacks}</h4>
+                        {player.weapon.name !== 'Fist' && <h4>Am: {player.weapon.ammo} / {player.weapon.maxAmmo}</h4>}
+                        {this.getActionButtons(player)}
+                    </div>
+                </div>
     }
     
 
@@ -114,6 +102,7 @@ export default class Map extends React.Component<Props, State> {
                 player.x = candidateTile.x
                 player.y = candidateTile.y
                 player.move--
+                //TODO check if picked up item/weapon, and drop held item/weapon if so
                 candidateTile.playerId = player.id
                 this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
                     ()=>onMovePlayer(player, this.props.activeSession));
@@ -139,13 +128,20 @@ export default class Map extends React.Component<Props, State> {
         return true
     }
 
-    performSpecial = (player:Player) => {
+    performSpecial = () => {
+        const player = this.props.me
         switch(player.item){
             case Item.SMAL_HEALTH:
                 player.hp+=1
             case Item.LARGE_HEALTH:
                 player.hp+=3
         }
+        onUpdatePlayer(player, this.props.activeSession)
+    }
+
+    reload = () => {
+        let player = this.props.me
+        player.weapon.reloadCooldown = player.weapon.reloadCooldownMax
         onUpdatePlayer(player, this.props.activeSession)
     }
 
@@ -166,14 +162,15 @@ export default class Map extends React.Component<Props, State> {
         this.hideAttackTiles()
     }
 
-    getUnitActionButtons = (me:Player, player?:Player) => {
+    getActionButtons = (player:Player) => {
         if(player){
-            let isOwner = player.id === me.id
+            let isOwner = player.id === this.props.me.id
             if(isOwner){
                 let buttons = []
-                buttons.push(LightButton(true, ()=>this.showAttackTiles(player), '(A)ttack'))
-                buttons.push(LightButton(true, this.startMovePlayer, '(M)ove'))
-                if(player.item) buttons.push(LightButton(player.itemCooldown === 0, ()=>this.performSpecial(player), player.item))
+                //TODO reload button w/ cooldown
+                buttons.push(LightButton(player.weapon.ammo > 0 && player.weapon.attacks > 0, ()=>this.showAttackTiles(player), '(A)ttack'))
+                buttons.push(LightButton(player.weapon.reloadCooldown===0, this.reload, player.weapon.reloadCooldown===0 ? '(R)eload' : 'Reloading...'))
+                if(player.item) buttons.push(LightButton(player.itemCooldown === 0, this.performSpecial, player.item))
                 return <div>
                             {buttons}
                        </div>
@@ -202,9 +199,6 @@ export default class Map extends React.Component<Props, State> {
 
     handleKeyDown = (keyCode:number) =>{
         switch(keyCode){
-            case 77:
-                this.state.movingPlayer ? this.setState({movingPlayer:false}) : this.startMovePlayer()
-                break
             case 65:
                 this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me)
                 break
@@ -226,7 +220,7 @@ export default class Map extends React.Component<Props, State> {
     render(){
         return (
             <div>
-                {this.getUnitInfoOfTile()}
+                {this.getMyInfo()}
                 <div style={{position:'relative'}}>
                     <div style={styles.mapFrame}>
                         <div style={{display:'flex'}}>
@@ -305,8 +299,9 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
     for(var i=0; i<Math.max(player.weapon.range, 3); i++){
-        //TODO: each sight ring beyond the first is larger
-        //Negative values must become more negative
+        //TODO: sight rings are wrong
+        //TODO: should also be affected by terrain, forest sets sight to 1 but others can't see into, hills provide +1 sight
+        //Negative values must become more negative or soemthing
         EightCoordinatesArray.forEach((direction) => {
             let candidateX = player.x
             let candidateY = player.y
