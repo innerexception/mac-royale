@@ -44,32 +44,38 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
                 })
             ),
         ticks: 0,
-        turnTickLimit: 20
+        turnTickLimit: 30
     }
     sendSessionUpdate(newSession)
 }
 
 export const onMovePlayer = (player:Player, session:Session) => {
-    sendReplacePlayer(session, player)
+    sendReplaceMapPlayer(session, player)
 }
 
 export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
+    if(attacker.weapon.ammo <= 0 || attacker.weapon.attacks <= 0) return 
     const target = session.players.find(player=>player.id === tile.playerId)
-    target.hp -= attacker.weapon.atk
+    if(target){
+        //TODO add weapon accuracy, armor 
+        target.hp -= attacker.weapon.atk
+        if(target.hp <= 0){
+            //TODO: Implement global kill feed
+            toast.show({message: attacker.name + ' killed '+target.name+' with '+attacker.weapon.name})
+        }
+        //TODO: render dead body if hp<0
+        sendReplaceMapPlayer(session, target)
+    } 
+
     attacker.move = 0
-    attacker.weapon.attacks--     
+    attacker.weapon.attacks--   
+    attacker.weapon.ammo--  
+    sendReplaceMapPlayer(session, attacker)
 
-    session = replacePlayer(session, {...attacker})
-    
-    if(target.hp <= 0){
-        toast.show({message: 'Casualty.'})
-        delete session.map[target.x][target.y].playerId
-    }
-
-    if(session.players.length === 1)
+    if(session.players.length === 1){
         session.status = MatchStatus.WIN
-    
-    sendSessionUpdate(session)
+        sendSessionUpdate(session)
+    }
 }
 
 export const onMatchTick = (session:Session) => {
@@ -79,7 +85,7 @@ export const onMatchTick = (session:Session) => {
         onEndTurn(session)
         return
     }
-    sendSessionUpdate(session)
+    sendSessionTick(session)
 }
 
 const onEndTurn = (session:Session) => {
@@ -93,11 +99,12 @@ const onEndTurn = (session:Session) => {
                 player.weapon.ammo = player.weapon.maxAmmo
         }
     })
+    //TODO: shrink the play area on multiple of 5 turns
     sendSessionUpdate(session)
 }
 
 export const onUpdatePlayer = (player:Player, session:Session) => {
-    sendSessionUpdate(replacePlayer(session, player))
+    sendReplacePlayer(session, player)
 }
 
 export const onMatchWon = (session:Session) => {
@@ -121,6 +128,13 @@ const sendSessionUpdate = (session:Session) => {
     })
 }
 
+const sendSessionTick = (session:Session) => {
+    server.publishMessage({
+        type: ReducerActions.MATCH_TICK,
+        sessionId: session.sessionId
+    })
+}
+
 const sendReplacePlayer = (session:Session, player:Player) => {
     server.publishMessage({
         type: ReducerActions.PLAYER_REPLACE,
@@ -129,12 +143,10 @@ const sendReplacePlayer = (session:Session, player:Player) => {
     })
 }
 
-const replacePlayer = (session:Session, player:Player) => {
-    session.players = session.players.map(splayer=>{
-        if(splayer.id === player.id){
-            return {...splayer, ...player}
-        }
-        return splayer
+const sendReplaceMapPlayer = (session:Session, player:Player) => {
+    server.publishMessage({
+        type: ReducerActions.PLAYER_MAP_REPLACE,
+        sessionId: session.sessionId,
+        player
     })
-    return session
 }

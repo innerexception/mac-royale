@@ -160,10 +160,8 @@ export default class Map extends React.Component<Props, State> {
     }
 
     performAttackOnTile = (tile:Tile) => {
-        if(tile.playerId){
-            //TODO flash/shake tile's unit here with Posed?
-            onAttackTile(this.props.me, tile, this.props.activeSession)
-        }
+        //TODO flash/shake tile's unit here with Posed?
+        onAttackTile(this.props.me, tile, this.props.activeSession)
         this.hideAttackTiles()
     }
 
@@ -237,8 +235,8 @@ export default class Map extends React.Component<Props, State> {
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
-                                            {tile.item && <div style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</div>}
-                                            {tile.weapon && <div style={{fontFamily:'Gun', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.weapon.rune}</div>}
+                                            {tile.item && <span style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</span>}
+                                            {tile.weapon && <span style={{fontFamily:'Gun', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.weapon.rune}</span>}
                                             {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
                                             {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}
                                         </div>

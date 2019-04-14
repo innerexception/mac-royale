@@ -19,7 +19,7 @@ export default class Lobby extends React.Component<Props> {
     }
 
     chooseAvatar = (avatar:string) => {
-        let player = this.props.currentUser as Player
+        let player = this.props.activeSession.players.find(player=>player.id === this.props.currentUser.id)
         player.rune = avatar
         onUpdatePlayer(player, this.props.activeSession)
     }

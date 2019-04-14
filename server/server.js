@@ -3,7 +3,9 @@ var http = require('http');
 var Constants = {
   PLAYER_AVAILABLE: 'ma',
   MATCH_UPDATE: 'mu',
-  PLAYER_REPLACE: 'prp'
+  PLAYER_REPLACE: 'prp',
+  PLAYER_MAP_REPLACE: 'pmp',
+  MATCH_TICK: 'mt'
 }
 
 /**
@@ -71,6 +73,11 @@ wsServer.on('request', function(request) {
             break
           case Constants.PLAYER_REPLACE: 
             var player = obj.player
+            targetSession.players = targetSession.players.filter(splayer=>splayer.id !== player.id)
+            targetSession.players.push(player)
+            break
+          case Constants.PLAYER_MAP_REPLACE: 
+            var player = obj.player
             targetSession.map.forEach(row => row.forEach(tile => {
                 if(tile.playerId && tile.playerId === player.id) delete tile.playerId
             }))
@@ -78,9 +85,11 @@ wsServer.on('request', function(request) {
             tile.playerId = player.id
             delete tile.weapon
             delete tile.item
-            console.log(player)
             targetSession.players = targetSession.players.filter(splayer=>splayer.id !== player.id)
             targetSession.players.push(player)
+            break
+          case Constants.MATCH_TICK: 
+            targetSession.ticks++
             break
         }
         sessions[obj.sessionId] = targetSession
