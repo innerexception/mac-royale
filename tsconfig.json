@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "outDir": "./build/",
-        "sourceMap": false,
-        "noImplicitAny": true,
+        "sourceMap": true,
+        "noImplicitAny": false,
         "moduleResolution": "node",
         "strictNullChecks": false,
         "allowSyntheticDefaultImports": false,

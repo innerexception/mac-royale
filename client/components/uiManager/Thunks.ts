@@ -4,7 +4,7 @@ import WS from '../../WebsocketClient'
 export const server = new WS()
 import Thunderdome from '../../assets/Thunderdome'
 import { toast } from './toast';
-import { getRandomInt } from '../Util';
+import { getRandomInt, getRandomItem, getRandomWeapon } from '../Util';
 
 export const onLogin = (currentUser:LocalUser, sessionId:string) => {
     dispatch({ type: ReducerActions.SET_USER, currentUser })
@@ -33,8 +33,14 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
         map: Thunderdome.map((row, i) => 
                 row.map((tile:Tile, j) => {
                     let player = players.find(player=>player.x===i && player.y === j)
-                    return {...tile, x:i, y:j, playerId: player ? player.id : null}
-                    //TODO set tile item/weapon if spawner is set
+                    return {
+                        ...tile,
+                        x:i,
+                        y:j,
+                        playerId: player ? player.id : null,
+                        item: tile.itemSpawn ? getRandomItem() : null,
+                        weapon: tile.weaponSpawn ? getRandomWeapon() : null
+                    }
                 })
             ),
         ticks: 0,

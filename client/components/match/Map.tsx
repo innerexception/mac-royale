@@ -13,7 +13,6 @@ interface Props {
 }
 
 interface State {
-    movingPlayer: boolean
     attackingPlayer: boolean
     showDescription: Player | null
     highlightTiles: Array<Array<boolean>>
@@ -23,7 +22,6 @@ interface State {
 export default class Map extends React.Component<Props, State> {
 
     state = {
-        movingPlayer: false,
         attackingPlayer: false,
         showDescription: null as null,
         highlightTiles: [[false]],
@@ -37,7 +35,7 @@ export default class Map extends React.Component<Props, State> {
     }
 
     startMovePlayer = () => {
-        this.setState({movingPlayer: true, attackingPlayer:false, highlightTiles:[[false]]});
+        this.setState({attackingPlayer:false, highlightTiles:[[false]]});
         (this.state.playerElRef.current as any).scrollIntoView({
                                             behavior: 'smooth',
                                             block: 'center',
@@ -128,7 +126,7 @@ export default class Map extends React.Component<Props, State> {
         return true
     }
 
-    performSpecial = () => {
+    useItem = () => {
         const player = this.props.me
         switch(player.item){
             case Item.SMAL_HEALTH:
@@ -147,16 +145,16 @@ export default class Map extends React.Component<Props, State> {
 
     showAttackTiles = (player:Player) => {
         let highlightTiles = getTilesInRange(player, this.props.map)
-        this.setState({attackingPlayer: true, highlightTiles, movingPlayer: false})
+        this.setState({attackingPlayer: true, highlightTiles})
     }
 
     hideAttackTiles = () => {
-        this.setState({attackingPlayer: false, movingPlayer:true, highlightTiles:[[false]]})
+        this.setState({attackingPlayer: false, highlightTiles:[[false]]})
     }
 
     performAttackOnTile = (tile:Tile) => {
         if(tile.playerId){
-            //TODO flash/shake tile's unit here
+            //TODO flash/shake tile's unit here with Posed?
             onAttackTile(this.props.me, tile, this.props.activeSession)
         }
         this.hideAttackTiles()
@@ -167,11 +165,10 @@ export default class Map extends React.Component<Props, State> {
             let isOwner = player.id === this.props.me.id
             if(isOwner){
                 let buttons = []
-                //TODO reload button w/ cooldown
                 buttons.push(LightButton(player.weapon.ammo > 0 && player.weapon.attacks > 0, ()=>this.showAttackTiles(player), '(A)ttack'))
                 buttons.push(LightButton(player.weapon.reloadCooldown===0, this.reload, player.weapon.reloadCooldown===0 ? '(R)eload' : 'Reloading...'))
-                if(player.item) buttons.push(LightButton(player.itemCooldown === 0, this.performSpecial, player.item))
-                return <div>
+                if(player.item) buttons.push(LightButton(!!player.item, this.useItem, '(U)se'))
+                return <div>    
                             {buttons}
                        </div>
             }
@@ -179,9 +176,9 @@ export default class Map extends React.Component<Props, State> {
         return <span/>
     }
 
-    getMoveArrowsOfTile = (tile:Tile, movingPlayer:boolean, session:Session) => {
+    getMoveArrowsOfTile = (tile:Tile, session:Session) => {
         let tileUnit = session.players.find(player=>player.id === tile.playerId)
-        if(tileUnit && movingPlayer && tile.playerId === this.props.me.id)
+        if(tileUnit && tile.playerId === this.props.me.id)
             return [
                     <div style={styles.leftArrow} onClick={()=>this.moveUnit(tileUnit, Directions.LEFT)}>{'<'}</div>,
                     <div style={styles.rightArrow} onClick={()=>this.moveUnit(tileUnit, Directions.RIGHT)}>></div>,
@@ -192,7 +189,6 @@ export default class Map extends React.Component<Props, State> {
     }
 
     getTileClickHandler = (tile:Tile) => {
-        if(this.state.movingPlayer) return null
         if(this.state.attackingPlayer) return ()=>this.performAttackOnTile(tile)
         return ()=>this.setState({attackingPlayer:null, highlightTiles:[[false]]})
     }
@@ -203,16 +199,16 @@ export default class Map extends React.Component<Props, State> {
                 this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me)
                 break
             case 38:
-                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.UP)
+                this.moveUnit(this.props.me, Directions.UP)
                 break
             case 40: 
-                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.DOWN)
+                this.moveUnit(this.props.me, Directions.DOWN)
                 break
             case 37: 
-                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.LEFT)
+                this.moveUnit(this.props.me, Directions.LEFT)
                 break
             case 39: 
-                this.state.movingPlayer && this.moveUnit(this.props.me, Directions.RIGHT)
+                this.moveUnit(this.props.me, Directions.RIGHT)
                 break
         }
     }
@@ -235,7 +231,8 @@ export default class Map extends React.Component<Props, State> {
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
                                             {tile.item && <div style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</div>}
-                                            {this.state.movingPlayer && this.getMoveArrowsOfTile(tile, this.state.movingPlayer, this.props.activeSession)}
+                                            {tile.weapon && <div style={{fontFamily:'Gun', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.weapon.rune}</div>}
+                                            {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
                                             {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}
                                         </div>
                                     )}

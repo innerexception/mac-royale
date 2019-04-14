@@ -4,24 +4,6 @@ declare enum Item {
     STIMS='STIMS'
 }
 
-declare enum WeaponType {
-    FIST='FIST',
-    SP38='SP38',
-    C1911='C1911',
-    LUGER='LUGER',
-    SPRINGFIELD='SPRINGFIELD',
-    MAC10='MAC10',
-    MP5='MP5',
-    UZI='UZI',
-    AK='AK',
-    THOMPSON='THOMPSON',
-    MG42='MG42',
-    M4='M4',
-    BARRET='BARRET',
-    SWEEPER='SWEEPER',
-    MINI='MINI'
-}
-
 declare enum Directions {LEFT='LEFT', RIGHT='RIGHT', UP='UP', DOWN='DOWN'}
 
 declare enum MatchStatus {ACTIVE='ACTIVE',WIN='WIN',LOSE='LOSE', SETUP='SETUP'}
@@ -63,10 +45,9 @@ interface Player {
     move: number
     maxMove: number
     rune: string
-    itemCooldown: number
-    item: Item,
-    weapon: Weapon,
-    armor: number,
+    item: Item
+    weapon: Weapon
+    armor: number
 }
 
 interface Tile {
