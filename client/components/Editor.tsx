@@ -17,17 +17,17 @@ export default class Editor extends React.Component {
         console.log(JSON.stringify(this.state.map))
     }
 
-    setTileType = (tile:Tile, type:TileType) => {
+    setTileType = (nextTile:Tile) => {
         let newTile = {
-            ...tile,
+            ...this.state.selectedTile,
             playerId: null as null,
             item: null as null,
             weapon: null as null,
-            type,
-            subType: (TileSubType as any)[type][getRandomInt((TileSubType as any)[type].length)]
+            type: this.state.tileBrush,
+            subType: (TileSubType as any)[this.state.tileBrush][getRandomInt((TileSubType as any)[this.state.tileBrush].length)]
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
-        this.setState({map: this.state.map, selectedTile:newTile, tileBrush: type})
+        this.setState({map: this.state.map, selectedTile:nextTile})
     }
 
     setTileItemSpawn = () => {
@@ -85,10 +85,10 @@ export default class Editor extends React.Component {
                                             background: 'transparent',
                                             borderStyle: isSelectedTile(tile, this.state.selectedTile) ? 'dashed' : 'dotted'
                                         }} 
-                                        onClick={()=>this.setTileType(tile, this.state.tileBrush)}> 
+                                        onClick={()=>this.setTileType(tile)}> 
                                         <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
                                         {tile.itemSpawn && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>a</div>}
-                                        {tile.weaponSpawn && <div style={{fontFamily:'Gun', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign: 'right'}}>a</div>}
+                                        {tile.weaponSpawn && <div style={{fontFamily:'Gun', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign: 'right'}}>ab</div>}
                                     </div>
                                 )}
                             </div>
@@ -103,6 +103,8 @@ export default class Editor extends React.Component {
 
 const isSelectedTile = (tile:Tile, selectedTile?:Tile) => {
     if(selectedTile){
+        if(tile.x === selectedTile.x && tile.y === selectedTile.y) 
+            console.log(tile + ' equals '+ selectedTile)
         return tile.x === selectedTile.x && tile.y === selectedTile.y
     }
     return false

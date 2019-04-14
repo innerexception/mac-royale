@@ -97,10 +97,17 @@ export default class Map extends React.Component<Props, State> {
                      break
             }
             if(!this.getObstruction(candidateTile.x, candidateTile.y, player)){
+                candidateTile = {...this.props.map[candidateTile.x][candidateTile.y]}
                 player.x = candidateTile.x
                 player.y = candidateTile.y
                 player.move--
-                //TODO check if picked up item/weapon, and drop held item/weapon if so
+                if(candidateTile.item){
+                    player.item = candidateTile.item
+                } 
+                if(candidateTile.weapon){
+                    player.weapon = {...candidateTile.weapon}
+                } 
+                
                 candidateTile.playerId = player.id
                 this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
                     ()=>onMovePlayer(player, this.props.activeSession));

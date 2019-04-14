@@ -87,7 +87,6 @@ const onEndTurn = (session:Session) => {
     session.players.forEach(player=>{
         player.move = player.maxMove
         player.weapon.attacks = player.weapon.maxAttacks
-        if(player.itemCooldown > 0) player.itemCooldown--
         if(player.weapon.reloadCooldown > 0){
             player.weapon.reloadCooldown--
             if(player.weapon.reloadCooldown === 0)

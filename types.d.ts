@@ -1,7 +1,7 @@
 declare enum Item {
-    SMAL_HEALTH='SMAL_HEALTH',
-    LARGE_HEALTH='LARGE_HEALTH',
-    STIMS='STIMS'
+    SMAL_HEALTH='a',
+    LARGE_HEALTH='b',
+    STIMS='c'
 }
 
 declare enum Directions {LEFT='LEFT', RIGHT='RIGHT', UP='UP', DOWN='DOWN'}

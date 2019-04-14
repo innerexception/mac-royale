@@ -24,8 +24,9 @@ export const ReducerActions= {
 export const PlayerRune = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
 export enum Item {
-    SMAL_HEALTH='SMAL_HEALTH',
-    LARGE_HEALTH='LARGE_HEALTH'
+    SMAL_HEALTH='a',
+    LARGE_HEALTH='b',
+    STIMS='c'
 }
 
 export const Weapon = {

@@ -51,7 +51,6 @@ wsServer.on('request', function(request) {
     if (message.type === 'utf8') { // accept only text
         var obj = JSON.parse(message.utf8Data)
         var targetSession = sessions[obj.sessionId]
-        console.log(sessions)
         if(!targetSession && obj.type !== Constants.PLAYER_AVAILABLE) return
         switch(obj.type){
           case Constants.PLAYER_AVAILABLE:
@@ -75,7 +74,11 @@ wsServer.on('request', function(request) {
             targetSession.map.forEach(row => row.forEach(tile => {
                 if(tile.playerId && tile.playerId === player.id) delete tile.playerId
             }))
-            targetSession.map[player.x][player.y].playerId = player.id
+            var tile = targetSession.map[player.x][player.y]
+            tile.playerId = player.id
+            delete tile.weapon
+            delete tile.item
+            console.log(player)
             targetSession.players = targetSession.players.filter(splayer=>splayer.id !== player.id)
             targetSession.players.push(player)
             break
@@ -114,7 +117,6 @@ const publishSessionUpdate = (targetSession) => {
   // broadcast message to clients of session
   var json = JSON.stringify({ type:'message', data: message });
   targetSession.players.forEach((player) => {
-      console.log((new Date()) + ' ' + message);
       sockets[player.socketId].sendUTF(json);
   })
 }
