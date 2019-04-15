@@ -57,7 +57,7 @@ export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
     if(attacker.weapon.ammo <= 0 || attacker.weapon.attacks <= 0) return 
     const target = session.players.find(player=>player.id === tile.playerId)
     if(target){
-        //TODO add weapon accuracy 
+        //TODO add weapon accuracy? 
         target.hp -= attacker.weapon.atk - target.armor
         sendReplaceMapPlayer(session, target)
     } 
@@ -94,7 +94,6 @@ const onEndTurn = (session:Session) => {
                 player.weapon.ammo = player.weapon.maxAmmo
         }
     })
-    //TODO: shrink the play area on multiple of 2 turns
     if(session.turn%2===0){
         session.map = session.map.map((row, x)=>{
             return row.map((tile, y)=>{

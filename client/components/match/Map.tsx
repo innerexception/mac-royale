@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { onMovePlayer, onAttackTile, onUpdatePlayer } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, EightCoordinatesArray, TileType, MatchStatus, Directions } from '../../../enum'
+import { FourCoordinatesArray, EightCoordinatesArray, TileType, Directions, PlayerRune } from '../../../enum'
 import { Button, LightButton } from '../Shared'
+import { toast } from '../uiManager/toast';
 
 interface Props {
     activeSession: Session
@@ -13,6 +14,7 @@ interface Props {
 }
 
 interface State {
+    deadPlayers: Array<Player>
     attackingPlayer: boolean
     showDescription: Player | null
     highlightTiles: Array<Array<boolean>>
@@ -26,12 +28,23 @@ export default class Map extends React.Component<Props, State> {
         showDescription: null as null,
         highlightTiles: [[false]],
         visibleTiles: getVisibleTilesOfPlayer(this.props.me, this.props.map),
-        playerElRef: React.createRef()
+        playerElRef: React.createRef(),
+        deadPlayers: []
     }
 
     componentDidMount = () => {
         window.addEventListener('keydown', (e)=>this.handleKeyDown(e.keyCode))
         this.startMovePlayer()
+    }
+
+    componentWillReceiveProps = (props:Props) => {
+        let dead = props.activeSession.players.filter(player=>player.hp<=0)
+        dead.forEach(player=>{
+            if(!this.state.deadPlayers.find(dplayer=>dplayer.id === player.id)){
+                toast.show({message: player.name + ' died.'})
+            }
+        })
+        this.setState({deadPlayers: dead})
     }
 
     startMovePlayer = () => {
