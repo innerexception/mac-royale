@@ -88,6 +88,7 @@ export default class Map extends React.Component<Props, State> {
 
     getMyInfo = () => {
         let player = this.props.me
+        //TODO fix layout of this panel
         return <div style={styles.tileInfo}>
                     <div>
                         <h4>{player.name}</h4>
@@ -158,8 +159,19 @@ export default class Map extends React.Component<Props, State> {
         switch(player.item){
             case Item.SMAL_HEALTH:
                 player.hp+=1
+                break
             case Item.LARGE_HEALTH:
                 player.hp+=3
+                break
+            case Item.ARMOR_SMALL: 
+                player.armor = 1
+                break
+            case Item.ARMOR_LARGE: 
+                player.armor = 3
+                break
+            case Item.STIMS: 
+                player.move = player.maxMove
+                break
         }
         onUpdatePlayer(player, this.props.activeSession)
     }
@@ -257,6 +269,7 @@ export default class Map extends React.Component<Props, State> {
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
                                             {tile.item && <span style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</span>}
+                                            //TODO: fix rendering weapon/item on tile with terrain
                                             {tile.weapon && <span style={{fontFamily:'Gun', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.weapon.rune}</span>}
                                             {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
                                             {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}

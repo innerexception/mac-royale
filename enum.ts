@@ -27,7 +27,9 @@ export const PlayerRune = ['a','b','c','d','e','f','g','h','i','j','k','l','m','
 export enum Item {
     SMAL_HEALTH='a',
     LARGE_HEALTH='b',
-    STIMS='c'
+    STIMS='c',
+    ARMOR_SMALL='d',
+    ARMOR_LARGE='e'
 }
 
 export const Weapon = {
