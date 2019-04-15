@@ -10,8 +10,7 @@ export const getRandomItem = () => {
 }
 
 export const getRandomWeapon = () =>{
-    //TODO: don't spawn FIST ever
     let keys = Object.keys(Weapon)
-    let index = getRandomInt(keys.length-1)
+    let index = Math.max(1, getRandomInt(keys.length-1))
     return Weapon[keys[index]]
 }

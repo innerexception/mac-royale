@@ -1,5 +1,5 @@
 import { dispatch } from '../../../client/App'
-import { ReducerActions, MatchStatus, Weapon } from '../../../enum'
+import { ReducerActions, MatchStatus, Weapon, TileType, TileSubType } from '../../../enum'
 import WS from '../../WebsocketClient'
 export const server = new WS()
 import Thunderdome from '../../assets/Thunderdome'
@@ -15,8 +15,8 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
     const players = session.players.map((player:Player, i) => {
         return {
             ...player,
-            x: getRandomInt(Thunderdome.length),
-            y: getRandomInt(Thunderdome[0].length),
+            x: Math.max(1, getRandomInt(Thunderdome.length-1)),
+            y: Math.max(1,getRandomInt(Thunderdome[0].length-1)),
             weapon: Weapon.FIST,
             hp: 5,
             maxHp: 5,
@@ -44,7 +44,7 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
                 })
             ),
         ticks: 0,
-        turnTickLimit: 30
+        turnTickLimit: 10
     }
     sendSessionUpdate(newSession)
 }
@@ -57,13 +57,8 @@ export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
     if(attacker.weapon.ammo <= 0 || attacker.weapon.attacks <= 0) return 
     const target = session.players.find(player=>player.id === tile.playerId)
     if(target){
-        //TODO add weapon accuracy, armor 
-        target.hp -= attacker.weapon.atk
-        if(target.hp <= 0){
-            //TODO: Implement global kill feed
-            toast.show({message: attacker.name + ' killed '+target.name+' with '+attacker.weapon.name})
-        }
-        //TODO: render dead body if hp<0
+        //TODO add weapon accuracy 
+        target.hp -= attacker.weapon.atk - target.armor
         sendReplaceMapPlayer(session, target)
     } 
 
@@ -72,7 +67,7 @@ export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
     attacker.weapon.ammo--  
     sendReplaceMapPlayer(session, attacker)
 
-    if(session.players.length === 1){
+    if(session.players.filter(player=>player.hp>0).length === 1){
         session.status = MatchStatus.WIN
         sendSessionUpdate(session)
     }
@@ -81,7 +76,6 @@ export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
 export const onMatchTick = (session:Session) => {
     session.ticks++
     if(session.ticks >= session.turnTickLimit){
-        session.turn++
         onEndTurn(session)
         return
     }
@@ -90,6 +84,7 @@ export const onMatchTick = (session:Session) => {
 
 const onEndTurn = (session:Session) => {
     session.ticks = 0
+    session.turn++
     session.players.forEach(player=>{
         player.move = player.maxMove
         player.weapon.attacks = player.weapon.maxAttacks
@@ -99,7 +94,23 @@ const onEndTurn = (session:Session) => {
                 player.weapon.ammo = player.weapon.maxAmmo
         }
     })
-    //TODO: shrink the play area on multiple of 5 turns
+    //TODO: shrink the play area on multiple of 2 turns
+    if(session.turn%2===0){
+        session.map = session.map.map((row, x)=>{
+            return row.map((tile, y)=>{
+                if(y === session.turn/2 || y=== session.map[x].length-(session.turn/2) 
+                    || x===0 || x===session.map.length-(session.turn/2))
+                    return {...tile, type:TileType.MOUNTAIN, subType: TileSubType.MOUNTAIN[0]}
+                else return tile
+            })
+        })
+        session.players = session.players.map(player=>{
+            if(session.map[player.x][player.y].type === TileType.MOUNTAIN){
+                return {...player, hp:0}
+            }
+            return player
+        })
+    }
     sendSessionUpdate(session)
 }
 

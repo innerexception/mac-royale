@@ -45,13 +45,20 @@ export default class Map extends React.Component<Props, State> {
                 
 
     getNotification = () => {
-        let activeName = this.props.activeSession.players[0] && this.props.activeSession.players[0].name
-        if(this.props.activeSession.status === MatchStatus.WIN)
+        let activePlayers = this.props.activeSession.players.filter(player=>player.hp>0)
+        if(activePlayers.length===1)
             return <div style={{...styles.disabled, display: 'flex'}}>
                         <div style={AppStyles.notification}>
-                            {activeName} is Victorious
+                            {activePlayers[0].name} is Victorious
                         </div>
                     </div>
+        else if(this.props.me.hp <= 0){
+            return <div style={{...styles.disabled, display: 'flex'}}>
+                        <div style={AppStyles.notification}>
+                            You died.
+                        </div>
+                    </div>
+        }
         else if(this.state.showDescription)
             return (
                 <div style={{...styles.disabled, display: 'flex'}}>
@@ -72,11 +79,11 @@ export default class Map extends React.Component<Props, State> {
                     <div>
                         <h4>{player.name}</h4>
                         {LightButton(true, ()=>this.setState({showDescription: player}), 'Info')}
-                    </div>
-                    <div>
                         <h4>M: {player.move} / {player.maxMove}</h4>
                         <h4>A: {player.weapon.attacks} / {player.weapon.maxAttacks}</h4>
                         {player.weapon.name !== 'Fist' && <h4>Am: {player.weapon.ammo} / {player.weapon.maxAmmo}</h4>}
+                    </div>
+                    <div>
                         {this.getActionButtons(player)}
                     </div>
                 </div>
@@ -96,7 +103,7 @@ export default class Map extends React.Component<Props, State> {
                 case Directions.RIGHT: candidateTile.x++
                      break
             }
-            if(!this.getObstruction(candidateTile.x, candidateTile.y, player)){
+            if(!this.getObstruction(candidateTile.x, candidateTile.y)){
                 candidateTile = {...this.props.map[candidateTile.x][candidateTile.y]}
                 player.x = candidateTile.x
                 player.y = candidateTile.y
@@ -121,7 +128,7 @@ export default class Map extends React.Component<Props, State> {
         }
     }
 
-    getObstruction = (x:number, y:number, player:Player) => {
+    getObstruction = (x:number, y:number) => {
         let tile = this.props.map[x][y]
         if(tile){
             if(tile.playerId) return true
@@ -171,7 +178,7 @@ export default class Map extends React.Component<Props, State> {
             if(isOwner){
                 let buttons = []
                 buttons.push(LightButton(player.weapon.ammo > 0 && player.weapon.attacks > 0, ()=>this.showAttackTiles(player), '(A)ttack'))
-                buttons.push(LightButton(player.weapon.reloadCooldown===0, this.reload, player.weapon.reloadCooldown===0 ? '(R)eload' : 'Reloading...'))
+                if(player.weapon.name !=='Fist') buttons.push(LightButton(player.weapon.reloadCooldown===0, this.reload, player.weapon.reloadCooldown===0 ? '(R)eload' : 'Reloading...'))
                 if(player.item) buttons.push(LightButton(!!player.item, this.useItem, '(U)se'))
                 return <div>    
                             {buttons}
@@ -183,7 +190,7 @@ export default class Map extends React.Component<Props, State> {
 
     getMoveArrowsOfTile = (tile:Tile, session:Session) => {
         let tileUnit = session.players.find(player=>player.id === tile.playerId)
-        if(tileUnit && tile.playerId === this.props.me.id)
+        if(tileUnit && tile.playerId === this.props.me.id && this.props.me.hp > 0 && !this.state.attackingPlayer)
             return [
                     <div style={styles.leftArrow} onClick={()=>this.moveUnit(tileUnit, Directions.LEFT)}>{'<'}</div>,
                     <div style={styles.rightArrow} onClick={()=>this.moveUnit(tileUnit, Directions.RIGHT)}>></div>,
@@ -199,23 +206,24 @@ export default class Map extends React.Component<Props, State> {
     }
 
     handleKeyDown = (keyCode:number) =>{
-        switch(keyCode){
-            case 65:
-                this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me)
-                break
-            case 38:
-                this.moveUnit(this.props.me, Directions.UP)
-                break
-            case 40: 
-                this.moveUnit(this.props.me, Directions.DOWN)
-                break
-            case 37: 
-                this.moveUnit(this.props.me, Directions.LEFT)
-                break
-            case 39: 
-                this.moveUnit(this.props.me, Directions.RIGHT)
-                break
-        }
+        if(this.props.me.hp > 0)
+            switch(keyCode){
+                case 65:
+                    this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me)
+                    break
+                case 38:
+                    this.moveUnit(this.props.me, Directions.UP)
+                    break
+                case 40: 
+                    this.moveUnit(this.props.me, Directions.DOWN)
+                    break
+                case 37: 
+                    this.moveUnit(this.props.me, Directions.LEFT)
+                    break
+                case 39: 
+                    this.moveUnit(this.props.me, Directions.RIGHT)
+                    break
+            }
     }
 
     render(){
@@ -261,7 +269,7 @@ const getUnitPortraitOfTile = (tile:Tile, me:Player, ref:any, session:Session) =
     if(tileUnit){
         return <div style={{textAlign:'right', position:'absolute', top:0, right:0}} ref={tileUnit.id === me.id && ref}>
                     <span style={{fontFamily:'Gun', fontSize:'0.6em'}}>{tileUnit.weapon.rune}</span>
-                    <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.rune}</span>
+                    <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.rune : 'U'}</span>
                     <div>{new Array(tileUnit.hp).fill(null).map((hp) =>  <span>*</span>)}</div>
                </div>
     }

@@ -54,7 +54,7 @@ export const Weapon = {
         maxAmmo: 6,
         accuracy: 0.3,
         rune: 'A',
-        reloadCooldown: 2,
+        reloadCooldown: 0,
         reloadCooldownMax: 2
     },
     G30: {
@@ -67,7 +67,7 @@ export const Weapon = {
         maxAmmo: 7,
         accuracy: 0.4,
         rune: 'D',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     LUGER: {
@@ -80,7 +80,7 @@ export const Weapon = {
         maxAmmo: 7,
         accuracy: 0.4,
         rune: 'HI',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     MAGNUM: {
@@ -93,7 +93,7 @@ export const Weapon = {
         maxAmmo: 6,
         accuracy: 0.4,
         rune: 'mn',
-        reloadCooldown: 2,
+        reloadCooldown: 0,
         reloadCooldownMax: 2
     },
     SPRINGFIELD: {
@@ -106,7 +106,7 @@ export const Weapon = {
         maxAmmo: 1,
         accuracy: 0.8,
         rune: 'XYZ',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     MAC10: {
@@ -119,7 +119,7 @@ export const Weapon = {
         maxAmmo: 20,
         accuracy: 0.3,
         rune: 'L',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     MP5: {
@@ -132,7 +132,7 @@ export const Weapon = {
         maxAmmo: 20,
         accuracy: 0.4,
         rune: 'MN',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     UZI: {
@@ -145,7 +145,7 @@ export const Weapon = {
         maxAmmo: 24,
         accuracy: 0.3,
         rune: 'pq',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     AK: {
@@ -158,7 +158,7 @@ export const Weapon = {
         maxAmmo: 30,
         accuracy: 0.3,
         rune: 'OP',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     THOMPSON: {
@@ -171,7 +171,7 @@ export const Weapon = {
         maxAmmo: 20,
         accuracy: 0.3,
         rune: 'UV',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     MG42: {
@@ -184,7 +184,7 @@ export const Weapon = {
         maxAmmo: 50,
         accuracy: 0.2,
         rune: 'rstuv',
-        reloadCooldown: 2,
+        reloadCooldown: 0,
         reloadCooldownMax: 2
     },
     M4: {
@@ -197,7 +197,7 @@ export const Weapon = {
         maxAmmo: 30,
         accuracy: 0.4,
         rune: 'RST',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     BARRET: {
@@ -210,7 +210,7 @@ export const Weapon = {
         maxAmmo: 5,
         accuracy: 0.8,
         rune: 'cde',
-        reloadCooldown: 2,
+        reloadCooldown: 0,
         reloadCooldownMax: 2
     },
     SWEEPER: {
@@ -223,7 +223,7 @@ export const Weapon = {
         maxAmmo: 5,
         accuracy: 0.8,
         rune: 'hij',
-        reloadCooldown: 1,
+        reloadCooldown: 0,
         reloadCooldownMax: 1
     },
     MINI: {
@@ -236,7 +236,7 @@ export const Weapon = {
         maxAmmo: 100,
         accuracy: 0.3,
         rune: 'wxy',
-        reloadCooldown: 3,
+        reloadCooldown: 0,
         reloadCooldownMax: 3
     }
 }
