@@ -20,8 +20,8 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
             weapon: Weapon.FIST,
             hp: 5,
             maxHp: 5,
-            move: 13,
-            maxMove: 13,
+            move: 4,
+            maxMove: 4,
             armor: 0
         }
     })
@@ -44,7 +44,7 @@ export const onMatchStart = (currentUser:LocalUser, session:Session) => {
                 })
             ),
         ticks: 0,
-        turnTickLimit: 10
+        turnTickLimit: 15
     }
     sendSessionUpdate(newSession)
 }

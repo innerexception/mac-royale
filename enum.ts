@@ -1,4 +1,4 @@
-export const ApiUrl= 'ws://localhost:1337'
+export const ApiUrl= 'wss://services.cryptonomical.com:3334'
 export const ReducerActions= {
     PLAYER_AVAILABLE: 'ma',
     MATCH_UPDATE: 'mu',

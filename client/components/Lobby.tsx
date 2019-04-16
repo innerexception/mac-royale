@@ -38,9 +38,9 @@ export default class Lobby extends React.Component<Props> {
 
     render(){
         return (
-            <div>
+            <div style={AppStyles.window}>
                 {TopBar('MacRoyale')}
-                <div style={{...AppStyles.window, padding:'0.5em'}}>
+                <div style={{padding:'0.5em'}}>
                     <h3>{this.props.activeSession.sessionId} Lobby</h3>
                     <div style={{marginBottom:'1em', alignItems:'center', overflow:'auto', maxHeight:'66vh'}}>
                         {this.props.activeSession.players.map((player:Player) => 
