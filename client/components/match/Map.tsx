@@ -219,7 +219,7 @@ export default class Map extends React.Component<Props, State> {
                         ref={tileUnit.id === this.props.me.id && this.state.playerElRef as any}>
                         <span style={{fontFamily:'Gun', fontSize:'0.6em'}}>{tileUnit.weapon.rune}</span>
                         <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.rune : 'U'}</span>
-                        <div>{new Array(tileUnit.hp).fill(null).map((hp) =>  <span>*</span>)}</div>
+                        <div>{new Array(Math.max(0,tileUnit.hp)).fill(null).map((hp) =>  <span>*</span>)}</div>
                    </div>
         }
         return <span/>
@@ -334,7 +334,7 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
     let playerTile = map[player.x][player.y]
-    for(var i=1; i<Math.max(player.weapon.range, getTileSight(playerTile)); i++){
+    for(var i=1; i<getTileSight(player, playerTile); i++){
         //TODO: should also be affected by terrain, forest sets sight to 1 but others can't see into, hills provide +1 sight
         let sideLength = 3 + (2*(i-1))
         let corner = {x: player.x-i, y:player.y-i}
@@ -359,19 +359,11 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     return tiles
 }
 
-const getTileSight = (tile:Tile) => {
+const getTileSight = (player:Player, tile:Tile) => {
     if(tile.type===TileType.FOREST) return 2
-    if(tile.type===TileType.HILL) return 6
-    return 4
+    if(tile.type===TileType.HILL) return Math.max(player.weapon.range, 5)
+    return Math.max(player.weapon.range, 4)
 }
-
-// zzzzzzz
-// zyyyyyz
-// zyxxxyz   
-// zyxbxyz   
-// zyxxxyz
-// zyyyyyz
-// zzzzzzz
 
 const styles = {
     disabled: {
