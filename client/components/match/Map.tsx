@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { onMovePlayer, onAttackTile, onUpdatePlayer } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, EightCoordinatesArray, TileType, Directions, PlayerRune } from '../../../enum'
+import { FourCoordinatesArray, EightCoordinatesArray, TileType, Directions, Item } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
 
@@ -56,7 +56,6 @@ export default class Map extends React.Component<Props, State> {
                                         })
     }
                 
-
     getNotification = () => {
         let activePlayers = this.props.activeSession.players.filter(player=>player.hp>0)
         if(activePlayers.length===1)
@@ -88,18 +87,18 @@ export default class Map extends React.Component<Props, State> {
 
     getMyInfo = () => {
         let player = this.props.me
-        //TODO fix layout of this panel
         return <div style={styles.tileInfo}>
-                    <div>
+                    <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
                         <h4>{player.name}</h4>
-                        {LightButton(true, ()=>this.setState({showDescription: player}), 'Info')}
-                        <h4>M: {player.move} / {player.maxMove}</h4>
-                        <h4>A: {player.weapon.attacks} / {player.weapon.maxAttacks}</h4>
-                        {player.weapon.name !== 'Fist' && <h4>Am: {player.weapon.ammo} / {player.weapon.maxAmmo}</h4>}
+                        <h4>HP: {player.hp}</h4>
+                        <h4>Arm: {player.armor}</h4>
                     </div>
-                    <div>
-                        {this.getActionButtons(player)}
+                    <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
+                        <h4>Atks: {player.weapon.attacks} / {player.weapon.maxAttacks}</h4>
+                        {player.weapon.name !== 'Fist' && <h4>Ammo: {player.weapon.ammo} / {player.weapon.maxAmmo}</h4>}
+                        <h4>Moves: {player.move} / {player.maxMove}</h4>
                     </div>
+                    {this.getActionButtons(player)}
                 </div>
     }
     
@@ -268,9 +267,8 @@ export default class Map extends React.Component<Props, State> {
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
-                                            {tile.item && <span style={{fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.item}</span>}
-                                            //TODO: fix rendering weapon/item on tile with terrain
-                                            {tile.weapon && <span style={{fontFamily:'Gun', color: AppStyles.colors.grey2, fontSize:'0.6em', textAlign:'left'}}>{tile.weapon.rune}</span>}
+                                            {tile.item && <span style={{...styles.tileItem, fontFamily:'Item'}}>{tile.item}</span>}
+                                            {tile.weapon && <span style={{...styles.tileItem, fontFamily:'Gun'}}>{tile.weapon.rune}</span>}
                                             {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
                                             {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}
                                         </div>
@@ -381,6 +379,9 @@ const styles = {
         height:'2em',
         border: '1px',
         position:'relative' as 'relative'
+    },
+    tileItem: {
+        fontFamily:'Item', color: AppStyles.colors.grey2, fontSize:'0.6em', position:'absolute' as 'absolute', top:0, left:0
     },
     levelBarOuter: {
         height:'0.25em',
