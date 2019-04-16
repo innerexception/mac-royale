@@ -11,6 +11,8 @@ interface Props {
 
 export default class Lobby extends React.Component<Props> {
 
+    state = { selectedAvatarIndex: 0 }
+
     startMatch = () => {
         console.log(this.props)
         onMatchStart(
@@ -28,6 +30,12 @@ export default class Lobby extends React.Component<Props> {
         if(this.props.activeSession.players.length < 2) return 'Waiting for more to join...'
     }
 
+    selectAvatar = (inc:number) => {
+        let selectedIndex = Math.min(Math.max(0,this.state.selectedAvatarIndex+inc), PlayerRune.length-1)
+        this.setState({selectedAvatarIndex: selectedIndex})
+        this.chooseAvatar(PlayerRune[selectedIndex])
+    }
+
     render(){
         return (
             <div>
@@ -38,12 +46,11 @@ export default class Lobby extends React.Component<Props> {
                         {this.props.activeSession.players.map((player:Player) => 
                             <div style={styles.nameTag}>
                                 {player.name}
-                                <select disabled={player.id!==this.props.currentUser.id} 
-                                        style={{fontFamily:'Rune'}} 
-                                        value={player.rune}
-                                        onChange={(e)=>this.chooseAvatar(e.currentTarget.value)}>
-                                    {PlayerRune.map(rune => <option value={rune} style={{fontFamily:'Rune'}}>{rune}</option>)}
-                                </select>
+                                <div style={{display:'flex'}}>
+                                    <div style={{cursor:'pointer'}} onClick={()=>this.selectAvatar(-1)}>{'<'}</div>
+                                    <div style={{fontFamily:'Rune'}}>{player.rune}</div>
+                                    <div style={{cursor:'pointer'}} onClick={()=>this.selectAvatar(1)}>></div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -67,6 +74,8 @@ const styles = {
         width: '100%',
         padding: '0.25em',
         marginBottom: '5px',
-        minWidth:'10em'
+        minWidth:'10em',
+        display:'flex',
+        justifyContent: 'space-between'
     }
 }
