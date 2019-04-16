@@ -24,12 +24,40 @@ export const ReducerActions= {
 
 export const PlayerRune = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-export enum Item {
+export enum ItemType {
     SMAL_HEALTH='a',
     LARGE_HEALTH='b',
     STIMS='c',
     ARMOR_SMALL='d',
-    ARMOR_LARGE='e'
+    ARMOR_LARGE='e',
+}
+
+export const Item = {
+    SMAL_HEALTH: {
+        name: 'S. Health',
+        rune: 'a',
+        type: ItemType.SMAL_HEALTH
+    },
+    LARGE_HEALTH: {
+        name: 'L. Health',
+        rune: 'b',
+        type: ItemType.LARGE_HEALTH
+    },
+    STIMS: {
+        name: 'Stims',
+        rune: 'c',
+        type: ItemType.STIMS
+    },
+    ARMOR_SMALL: {
+        name: 'S. Armor',
+        rune: 'd',
+        type: ItemType.ARMOR_SMALL
+    },
+    ARMOR_LARGE: {
+        name: 'L. Armor',
+        rune: 'e',
+        type: ItemType.ARMOR_LARGE
+    }
 }
 
 export const Weapon = {

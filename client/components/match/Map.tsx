@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { onMovePlayer, onAttackTile, onUpdatePlayer } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, EightCoordinatesArray, TileType, Directions, Item } from '../../../enum'
+import { FourCoordinatesArray, TileType, Directions, ItemType } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
 
@@ -155,23 +155,24 @@ export default class Map extends React.Component<Props, State> {
 
     useItem = () => {
         const player = this.props.me
-        switch(player.item){
-            case Item.SMAL_HEALTH:
+        switch(player.item.type){
+            case ItemType.SMAL_HEALTH:
                 player.hp+=1
                 break
-            case Item.LARGE_HEALTH:
+            case ItemType.LARGE_HEALTH:
                 player.hp+=3
                 break
-            case Item.ARMOR_SMALL: 
+            case ItemType.ARMOR_SMALL: 
                 player.armor = 1
                 break
-            case Item.ARMOR_LARGE: 
+            case ItemType.ARMOR_LARGE: 
                 player.armor = 3
                 break
-            case Item.STIMS: 
+            case ItemType.STIMS: 
                 player.move = player.maxMove
                 break
         }
+        delete player.item
         onUpdatePlayer(player, this.props.activeSession)
     }
 
@@ -203,7 +204,7 @@ export default class Map extends React.Component<Props, State> {
                 let buttons = []
                 buttons.push(LightButton(player.weapon.ammo > 0 && player.weapon.attacks > 0, ()=>this.showAttackTiles(player), '(A)ttack'))
                 if(player.weapon.name !=='Fist') buttons.push(LightButton(player.weapon.reloadCooldown===0, this.reload, player.weapon.reloadCooldown===0 ? '(R)eload' : 'Reloading...'))
-                if(player.item) buttons.push(LightButton(!!player.item, this.useItem, '(U)se'))
+                if(player.item) buttons.push(LightButton(!!player.item, this.useItem, '(U)se '+player.item.name))
                 return <div>    
                             {buttons}
                        </div>
@@ -279,7 +280,7 @@ export default class Map extends React.Component<Props, State> {
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
                                             <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
-                                            {tile.item && <span style={{...styles.tileItem, fontFamily:'Item'}}>{tile.item}</span>}
+                                            {tile.item && <span style={{...styles.tileItem, fontFamily:'Item'}}>{tile.item.rune}</span>}
                                             {tile.weapon && <span style={{...styles.tileItem, fontFamily:'Gun'}}>{tile.weapon.rune}</span>}
                                             {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
                                             {this.getUnitPortraitOfTile(tile)}
@@ -335,7 +336,6 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
                     new Array(map[0].length).fill(false))
     let playerTile = map[player.x][player.y]
     for(var i=1; i<getTileSight(player, playerTile); i++){
-        //TODO: should also be affected by terrain, forest sets sight to 1 but others can't see into, hills provide +1 sight
         let sideLength = 3 + (2*(i-1))
         let corner = {x: player.x-i, y:player.y-i}
 

@@ -1,4 +1,4 @@
-declare enum Item {
+declare enum ItemType {
     SMAL_HEALTH='a',
     LARGE_HEALTH='b',
     STIMS='c',
@@ -21,6 +21,12 @@ declare enum TileType {
 interface LocalUser {
     name:string
     id:string
+}
+
+interface Item {
+    name: string
+    rune: string
+    type: ItemType
 }
 
 interface Weapon {

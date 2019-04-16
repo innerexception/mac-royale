@@ -6,6 +6,7 @@ export const getRandomItem = () => {
     let keys = Object.keys(Item)
     let index = getRandomInt(keys.length-1)
     return Item[keys[index]]
+    //TODO: need item description text and meaningful rune
 }
 
 export const getRandomWeapon = () =>{
