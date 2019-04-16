@@ -212,6 +212,19 @@ export default class Map extends React.Component<Props, State> {
         return <span/>
     }
 
+    getUnitPortraitOfTile = (tile:Tile) => {
+        let tileUnit = this.props.activeSession.players.find(player=>player.id === tile.playerId)
+        if(tileUnit){
+            return <div style={{textAlign:'right', position:'absolute', top:0, right:0, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
+                        ref={tileUnit.id === this.props.me.id && this.state.playerElRef as any}>
+                        <span style={{fontFamily:'Gun', fontSize:'0.6em'}}>{tileUnit.weapon.rune}</span>
+                        <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.rune : 'U'}</span>
+                        <div>{new Array(tileUnit.hp).fill(null).map((hp) =>  <span>*</span>)}</div>
+                   </div>
+        }
+        return <span/>
+    }
+
     getMoveArrowsOfTile = (tile:Tile, session:Session) => {
         let tileUnit = session.players.find(player=>player.id === tile.playerId)
         if(tileUnit && tile.playerId === this.props.me.id && this.props.me.hp > 0 && !this.state.attackingPlayer)
@@ -262,15 +275,14 @@ export default class Map extends React.Component<Props, State> {
                                     {row.map((tile:Tile, y) => 
                                         <div style={{
                                                 ...styles.tile, 
-                                                opacity: getTileOpacity(tile, this.props.me, this.state.visibleTiles),
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
+                                            <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
                                             {tile.item && <span style={{...styles.tileItem, fontFamily:'Item'}}>{tile.item}</span>}
                                             {tile.weapon && <span style={{...styles.tileItem, fontFamily:'Gun'}}>{tile.weapon.rune}</span>}
                                             {this.getMoveArrowsOfTile(tile, this.props.activeSession)}
-                                            {getUnitPortraitOfTile(tile, this.props.me, this.state.playerElRef, this.props.activeSession)}
+                                            {this.getUnitPortraitOfTile(tile)}
                                         </div>
                                     )}
                                 </div>
@@ -288,26 +300,15 @@ export default class Map extends React.Component<Props, State> {
     }
 }
 
-const getUnitPortraitOfTile = (tile:Tile, me:Player, ref:any, session:Session) => {
-    let tileUnit = session.players.find(player=>player.id === tile.playerId)
-    if(tileUnit){
-        return <div style={{textAlign:'right', position:'absolute', top:0, right:0}} ref={tileUnit.id === me.id && ref}>
-                    <span style={{fontFamily:'Gun', fontSize:'0.6em'}}>{tileUnit.weapon.rune}</span>
-                    <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.rune : 'U'}</span>
-                    <div>{new Array(tileUnit.hp).fill(null).map((hp) =>  <span>*</span>)}</div>
-               </div>
-    }
-    return <span/>
+const getUnitOpacity = (player:Player, me:Player, visibleTiles: Array<Array<boolean>>) => {
+    let isOwner = player.id === me.id
+    if(isOwner) 
+        return 1
+    else 
+        return visibleTiles[player.x][player.y] ? 0.5 : 0
 }
 
-const getTileOpacity = (tile:Tile, me:Player, visibleTiles: Array<Array<boolean>>) => {
-    if(tile.playerId){
-        let isOwner = tile.playerId === me.id
-        if(isOwner) return 1
-        else {
-            return visibleTiles[tile.x][tile.y] ? 0.5 : 0
-        }
-    }
+const getTerrainOpacity = (tile:Tile, visibleTiles: Array<Array<boolean>>) => {
     return visibleTiles[tile.x][tile.y] ? 1 : 0.5
 }
 
@@ -332,23 +333,45 @@ const getTilesInRange = (player:Player, map:Array<Array<Tile>>) => {
 const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
-    for(var i=0; i<Math.max(player.weapon.range, 3); i++){
-        //TODO: sight rings are wrong
+    let playerTile = map[player.x][player.y]
+    for(var i=1; i<Math.max(player.weapon.range, getTileSight(playerTile)); i++){
         //TODO: should also be affected by terrain, forest sets sight to 1 but others can't see into, hills provide +1 sight
-        //Negative values must become more negative or soemthing
-        EightCoordinatesArray.forEach((direction) => {
-            let candidateX = player.x
-            let candidateY = player.y
-            candidateX += (direction.x < 0 ? direction.x-i : direction.x+i)
-            candidateY += (direction.y < 0 ? direction.y-i : direction.y+i)
-            if(candidateY >= 0 && candidateX >= 0 
-                && candidateX < map.length 
-                && candidateY < map[0].length)
-                tiles[candidateX][candidateY] = true
-        })
+        let sideLength = 3 + (2*(i-1))
+        let corner = {x: player.x-i, y:player.y-i}
+
+        for(var y=0; y<sideLength;y++){
+            for(var x=0; x<sideLength; x++){
+                let candidate = {x: corner.x+x, y: corner.y+y}
+                if(candidate.y >= 0 && candidate.x >= 0 
+                    && candidate.x < map.length 
+                    && candidate.y < map[0].length){
+                        let candidateTile = map[candidate.x][candidate.y]
+                        if(sideLength > 3 && candidateTile.type === TileType.FOREST) 
+                            tiles[candidate.x][candidate.y] = false
+                        else
+                            tiles[candidate.x][candidate.y] = true
+                    }
+            }
+        }
+        
+
     }
     return tiles
 }
+
+const getTileSight = (tile:Tile) => {
+    if(tile.type===TileType.FOREST) return 2
+    if(tile.type===TileType.HILL) return 6
+    return 4
+}
+
+// zzzzzzz
+// zyyyyyz
+// zyxxxyz   
+// zyxbxyz   
+// zyxxxyz
+// zyyyyyz
+// zzzzzzz
 
 const styles = {
     disabled: {
